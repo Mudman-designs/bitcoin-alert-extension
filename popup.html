@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>BTC Alert</title>
+    <style>
+        body { 
+            width: 380px; 
+            padding: 15px; 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            margin: 0;
+            max-height: 650px;
+            overflow-y: auto;
+        }
+        h2 {
+            margin: 0 0 15px 0;
+            color: #f7931a;
+            font-size: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .price-display {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .price {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f7931a;
+        }
+        .price-label {
+            font-size: 12px;
+            color: #888;
+            margin-top: 5px;
+        }
+        .price-details {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 8px;
+            font-size: 11px;
+            color: #888;
+        }
+        .alert-section {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .alert-tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .alert-tab {
+            padding: 5px 12px;
+            border-radius: 4px;
+            border: 1px solid #333;
+            background: transparent;
+            color: #888;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .alert-tab:hover {
+            background: #2a2a4e;
+        }
+        .alert-tab.active {
+            background: #f7931a;
+            color: #1a1a2e;
+            border-color: #f7931a;
+        }
+        .alert-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .alert-input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .alert-input-row label {
+            font-size: 12px;
+            color: #aaa;
+            min-width: 50px;
+        }
+        .alert-input {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #333;
+            border-radius: 4px;
+            background: #0f3460;
+            color: #fff;
+            font-size: 13px;
+        }
+        .alert-input:focus {
+            outline: none;
+            border-color: #f7931a;
+        }
+        .alert-input-small {
+            width: 60px;
+            flex: none;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #f7931a;
+            color: #1a1a2e;
+        }
+        .btn-primary:hover {
+            background: #e6851a;
+            transform: translateY(-1px);
+        }
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        .btn-secondary {
+            background: #333;
+            color: #fff;
+            padding: 4px 10px;
+            font-size: 11px;
+        }
+        .btn-secondary:hover {
+            background: #444;
+        }
+        .alerts-list {
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+        .alert-item {
+            background: #1a1a3e;
+            padding: 8px 10px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #f7931a;
+            font-size: 12px;
+        }
+        .alert-item .type-badge {
+            font-size: 10px;
+            background: #f7931a;
+            color: #1a1a2e;
+            padding: 1px 8px;
+            border-radius: 10px;
+            margin-right: 6px;
+        }
+        .alert-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .alert-price {
+            color: #f7931a;
+            font-weight: bold;
+        }
+        .alert-thresholds {
+            font-size: 11px;
+            color: #888;
+        }
+        .alert-status {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        .alert-status.active {
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+        .alert-status.triggered {
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.1);
+        }
+        .no-alerts {
+            color: #666;
+            text-align: center;
+            padding: 15px;
+            font-size: 13px;
+        }
+        .status {
+            font-size: 12px;
+            color: #888;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .status.success { color: #4ade80; }
+        .status.error { color: #ef4444; }
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #1a1a2e; }
+        ::-webkit-scrollbar-thumb { background: #f7931a; border-radius: 2px; }
+        .hint { font-size: 11px; color: #666; margin-top: 5px; }
+        .history-item {
+            background: #1a1a3e;
+            padding: 8px 12px;
+            margin-bottom: 4px;
+            border-radius: 4px;
+            border-left: 3px solid #f7931a;
+            font-size: 12px;
+        }
+        .history-item.unread {
+            border-left-color: #fbbf24;
+            background: #1a1a3e;
+        }
+        .history-item .time { color: #666; font-size: 10px; }
+        .history-item .msg { color: #ccc; margin-top: 2px; }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .history-header h4 { margin: 0; color: #aaa; font-size: 13px; }
+        .badge {
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            padding: 1px 6px;
+            font-size: 10px;
+            margin-left: 4px;
+        }
+        select.alert-input {
+            appearance: none;
+            cursor: pointer;
+        }
+        .indicators-display {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            font-size: 11px;
+            color: #888;
+            margin-top: 8px;
+        }
+        .indicators-display span {
+            background: #0f3460;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .indicators-display .value {
+            color: #f7931a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>₿ Smart Alert <span id="notificationBadge" style="display:none;">🔔</span></h2>
+    
+    <div class="price-display">
+        <div class="price" id="priceDisplay">Loading...</div>
+        <div class="price-label">Current Bitcoin Price (USD)</div>
+        <div class="price-details">
+            <span>📊 RSI: <span id="rsiDisplay">--</span></span>
+            <span>📈 Volatility: <span id="volatilityDisplay">--</span></span>
+        </div>
+    </div>
+    
+    <div class="alert-section">
+        <div style="font-size:13px;margin-bottom:8px;color:#aaa;">Smart Alert Types</div>
+        <div class="alert-tabs">
+            <button class="alert-tab active" data-type="price">💰 Price</button>
+            <button class="alert-tab" data-type="volume_spike">📊 Volume</button>
+            <button class="alert-tab" data-type="volatility_shift">⚡ Volatility</button>
+            <button class="alert-tab" data-type="rsi">📈 RSI</button>
+            <button class="alert-tab" data-type="golden_cross">🔀 Cross</button>
+        </div>
+        
+        <div id="alertForm" class="alert-input-group">
+            <!-- Price Alert -->
+            <div id="priceForm" class="alert-form">
+                <div class="alert-input-row">
+                    <label>Min:</label>
+                    <input type="number" id="minPrice" class="alert-input" placeholder="0" step="100">
+                </div>
+                <div class="alert-input-row">
+                    <label>Max:</label>
+                    <input type="number" id="maxPrice" class="alert-input" placeholder="0" step="100">
+                </div>
+                <div class="hint">Alert when price goes BELOW min OR ABOVE max</div>
+            </div>
+            
+            <!-- Volume Spike Alert -->
+            <div id="volumeForm" class="alert-form" style="display:none;">
+                <div class="alert-input-row">
+                    <label>Threshold:</label>
+                    <select id="volumeThreshold" class="alert-input">
+                        <option value="2">2x Average Volume</option>
+                        <option value="3" selected>3x Average Volume</option>
+                        <option value="5">5x Average Volume</option>
+                        <option value="10">10x Average Volume</option>
+                    </select>
+                </div>
+                <div class="hint">Alert when volume surges above average</div>
+            </div>
+            
+            <!-- Volatility Shift Alert -->
+            <div id="volatilityForm" class="alert-form" style="display:none;">
+                <div class="alert-input-row">
+                    <label>Threshold:</label>
+                    <select id="volatilityThreshold" class="alert-input">
+                        <option value="0.01">1% Change</option>
+                        <option value="0.02" selected>2% Change</option>
+                        <option value="0.03">3% Change</option>
+                        <option value="0.05">5% Change</option>
+                        <option value="0.10">10% Change</option>
+                    </select>
+                </div>
+                <div class="hint">Alert when volatility spikes above threshold</div>
+            </div>
+            
+            <!-- RSI Alert -->
+            <div id="rsiForm" class="alert-form" style="display:none;">
+                <div class="alert-input-row">
+                    <label>Direction:</label>
+                    <select id="rsiDirection" class="alert-input">
+                        <option value="above">Above (Overbought)</option>
+                        <option value="below">Below (Oversold)</option>
+                    </select>
+                </div>
+                <div class="alert-input-row">
+                    <label>Threshold:</label>
+                    <select id="rsiThreshold" class="alert-input">
+                        <option value="70">70 (Overbought)</option>
+                        <option value="80">80 (Extreme Overbought)</option>
+                        <option value="30">30 (Oversold)</option>
+                        <option value="20">20 (Extreme Oversold)</option>
+                    </select>
+                </div>
+                <div class="hint">Alert when RSI crosses threshold</div>
+            </div>
+            
+            <!-- Golden Cross Alert -->
+            <div id="crossForm" class="alert-form" style="display:none;">
+                <div class="hint">Alert on Golden Cross (50-day EMA crosses above 200-day EMA) or Death Cross (crosses below)</div>
+                <div style="margin-top:8px;color:#888;font-size:11px;">This is a single-shot alert that triggers once per cross</div>
+            </div>
+            
+            <button id="setAlertBtn" class="btn btn-primary" style="margin-top:10px;">Set Smart Alert</button>
+        </div>
+    </div>
+    
+    <div class="alert-section">
+        <div style="font-size:13px;margin-bottom:8px;color:#aaa;">Active Alerts</div>
+        <div id="alertsList" class="alerts-list">
+            <div class="no-alerts">No alerts set</div>
+        </div>
+    </div>
+    
+    <div class="alert-section">
+        <div class="history-header">
+            <h4>📋 Notification History</h4>
+            <button id="clearHistoryBtn" class="btn btn-secondary">Clear All</button>
+        </div>
+        <div id="historyList">
+            <div class="no-alerts">No notifications yet</div>
+        </div>
+    </div>
+    
+    <div class="status" id="statusDisplay">● Connected</div>
+    
+    <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+[
+  {
+    "id": 2,
+    "type": "volatility_shift",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": null,
+    "volatility_threshold": 0.02,
+    "rsi_threshold": null,
+    "rsi_direction": "above",
+    "triggered": false,
+    "created_at": "2026-06-19T13:02:56.383784"
+  },
+  {
+    "id": 4,
+    "type": "golden_cross",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": null,
+    "volatility_threshold": null,
+    "rsi_threshold": null,
+    "rsi_direction": "above",
+    "triggered": false,
+    "created_at": "2026-06-19T13:03:01.640709"
+  },
+  {
+    "id": 5,
+    "type": "volume_spike",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": 2,
+    "volatility_threshold": null,
+    "rsi_threshold": null,
+    "rsi_direction": "above",
+    "triggered": false,
+    "created_at": "2026-06-19T13:12:07.030671"
+  },
+  {
+    "id": 6,
+    "type": "rsi",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": null,
+    "volatility_threshold": null,
+    "rsi_threshold": 70,
+    "rsi_direction": "above",
+    "triggered": false,
+    "created_at": "2026-06-19T13:13:08.608697"
+  },
+  {
+    "id": 7,
+    "type": "rsi",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": null,
+    "volatility_threshold": null,
+    "rsi_threshold": 30,
+    "rsi_direction": "below",
+    "triggered": true,
+    "created_at": "2026-06-19T13:13:16.743866",
+    "triggered_at": "2026-06-19T13:16:24.280428"
+  },
+  {
+    "id": 8,
+    "type": "golden_cross",
+    "min_price": null,
+    "max_price": null,
+    "volume_threshold": null,
+    "volatility_threshold": null,
+    "rsi_threshold": null,
+    "rsi_direction": "above",
+    "triggered": false,
+    "created_at": "2026-06-19T13:13:57.312937"
+  }
+]

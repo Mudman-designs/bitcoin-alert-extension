@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Bitcoin Alert Assistant",
+  "version": "1.0",
+  "description": "Smart Bitcoin alerts with volume, volatility, RSI, and cross signals",
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["activeTab", "notifications", "alarms", "storage"],
+  "host_permissions": [
+    "http://127.0.0.1:5601/*",
+    "http://localhost:5601/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
