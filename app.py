@@ -205,3 +205,32 @@ if __name__ == '__main__':
     port = int(os.getenv('PORT', 5601))
     print(f"Starting server on port {port}")
     app.run(host='0.0.0.0', port=port, debug=False)
+
+# License validation for Pro version
+VALID_LICENSES = []  # In production, store these in a database
+
+@app.route('/api/validate_license', methods=['POST'])
+def validate_license():
+    """Validate a Pro license key"""
+    try:
+        data = request.get_json()
+        license_key = data.get('license_key', '').strip()
+        
+        if not license_key:
+            return jsonify({'valid': False, 'error': 'License key required'}), 400
+        
+        # For now, check against a list of valid keys
+        # In production, you'd check against a database
+        # Keys should be in format: BTC-PRO-XXXX-XXXX
+        
+        if license_key in VALID_LICENSES:
+            return jsonify({
+                'valid': True,
+                'message': 'Valid license key',
+                'features': ['volume_spike', 'volatility_shift', 'rsi', 'golden_cross']
+            })
+        else:
+            return jsonify({'valid': False, 'message': 'Invalid license key'}), 401
+    except Exception as e:
+        print(f"License validation error: {e}")
+        return jsonify({'valid': False, 'error': str(e)}), 500
