@@ -8,7 +8,6 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 
-# Print debug info
 print(f"Python version: {sys.version}")
 print("Starting Bitcoin Alert API...")
 
@@ -17,7 +16,6 @@ CORS(app)
 
 print("Flask app created successfully!")
 
-# Simple in-memory storage for alerts
 alerts = []
 ALERTS_FILE = 'alerts.json'
 
@@ -34,42 +32,91 @@ def save_alerts(alerts_data):
     with open(ALERTS_FILE, 'w') as f:
         json.dump(alerts_data, f, indent=2)
 
-# Load existing alerts
 alerts = load_alerts()
 
-# Price cache
+# Price cache with fallback
 price_cache = {
     'data': None,
     'timestamp': None,
-    'cache_duration': 15
+    'cache_duration': 30,
+    'last_successful_price': 62000
 }
 
 def get_cached_price():
     now = datetime.now()
     
+    # Check if cache is valid
     if (price_cache['timestamp'] and 
         (now - price_cache['timestamp']).total_seconds() < price_cache['cache_duration']):
         print("Using cached price data")
         return price_cache['data']
     
     print("Fetching fresh price data...")
-    try:
-        time.sleep(0.5)
-        response = requests.get(
-            'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_vol=true',
-            timeout=10
-        )
-        response.raise_for_status()
-        data = response.json()
-        price_cache['data'] = data
-        price_cache['timestamp'] = now
-        return data
-    except Exception as e:
-        print(f"Error fetching price: {e}")
-        if price_cache['data']:
-            print("Using cached data")
-            return price_cache['data']
-        return None
+    
+    # Try multiple sources
+    sources = [
+        {
+            'name': 'CoinGecko',
+            'url': 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_vol=true',
+            'parser': lambda d: {'price': d['bitcoin']['usd'], 'volume': d['bitcoin'].get('usd_24h_vol', 0)}
+        },
+        {
+            'name': 'Binance',
+            'url': 'https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',
+            'parser': lambda d: {'price': float(d['price']), 'volume': 0}
+        },
+        {
+            'name': 'Coinbase',
+            'url': 'https://api.coinbase.com/v2/prices/BTC-USD/spot',
+            'parser': lambda d: {'price': float(d['data']['amount']), 'volume': 0}
+        },
+        {
+            'name': 'Kraken',
+            'url': 'https://api.kraken.com/0/public/Ticker?pair=XBTUSD',
+            'parser': lambda d: {'price': float(d['result']['XXBTZUSD']['c'][0]), 'volume': 0}
+        }
+    ]
+    
+    for source in sources:
+        try:
+            print(f"Trying {source['name']}: {source['url']}")
+            time.sleep(0.3)
+            response = requests.get(source['url'], timeout=10, headers={
+                'User-Agent': 'Mozilla/5.0 (compatible; BitcoinAlert/1.0)'
+            })
+            
+            if response.status_code == 200:
+                data = response.json()
+                parsed = source['parser'](data)
+                
+                price_cache['data'] = {
+                    'bitcoin': {
+                        'usd': parsed['price'],
+                        'usd_24h_vol': parsed['volume']
+                    }
+                }
+                price_cache['timestamp'] = now
+                price_cache['last_successful_price'] = parsed['price']
+                print(f"✅ Successfully fetched price from {source['name']}: ${parsed['price']}")
+                return price_cache['data']
+            else:
+                print(f"❌ {source['name']} returned status {response.status_code}")
+        except Exception as e:
+            print(f"❌ {source['name']} error: {e}")
+            continue
+    
+    # If all sources fail, use cached or fallback
+    if price_cache['data']:
+        print("⚠️ Using cached data (all sources failed)")
+        return price_cache['data']
+    
+    print(f"⚠️ Using fallback price: ${price_cache['last_successful_price']}")
+    return {
+        'bitcoin': {
+            'usd': price_cache['last_successful_price'],
+            'usd_24h_vol': 0
+        }
+    }
 
 @app.route('/')
 def index():
